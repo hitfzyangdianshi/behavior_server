@@ -1,7 +1,9 @@
-﻿#include <cstdio>
+﻿#define _CRT_SECURE_NO_WARNINGS
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <fstream>
 
 #include <winsock2.h>
 
@@ -10,10 +12,12 @@
 #pragma comment(lib,"ws2_32.lib")
 
 
+
+
 using namespace std;
 
 
-//ref: https://blog.csdn.net/weixin_42837024/article/details/97526500
+
 char* receive_data(int port) {
     int result = 0;
 
@@ -67,15 +71,18 @@ char* receive_data(int port) {
     char* f;
 
     f = inet_ntoa(addrClient.sin_addr);
-    cout << "accept client ip:" << f << std::endl;
+    cout << "accept client ip:" << f << endl;
 
     char recvBuff[9999];
     memset(recvBuff, '\0', sizeof(char)* 9999);
 
     recv(socketConn, recvBuff, 9999, 0);
 
-    cout << "recv from client:\n" << recvBuff << std::endl;;
+    cout << "recv from client:\n" << recvBuff << endl;;
 
+    ofstream  output("reveive output.txt");
+    output << recvBuff << endl;
+    output.close();
 
 
     closesocket(server_);
@@ -110,7 +117,7 @@ bool send_data(const char* addr, int port, char* data_buffer) {
 
     if (connect(socketClient, (struct sockaddr*)&addrServer, sizeof(addrServer)) == INVALID_SOCKET)
     {
-        std::cout << "connect error";
+        cout << "connect error";
         return false;
     }
  
@@ -120,28 +127,61 @@ bool send_data(const char* addr, int port, char* data_buffer) {
 
     printf("data sent[%d]: %s\n", strlen(data_buffer), data_buffer);
 
-   // closesocket(socketClient);
-   // WSACleanup();
+
+    closesocket(socketClient);
+    WSACleanup();
 
     return true;
 }
 
 
-char composite_number[] = "77785013981551582343293798510443924965464555461232131231556156315109210222301999001";
+char composite_number[] = "77785099991111111111111111111111112222222222222222222222999999999999999999999999999999990000000000000000000009999999999999999999999999999999999999999999999999999999";
 
-int main()
-{
+int main(int argc, char** argv) {
+
+#ifdef LOOP_SENDING
+    while (1) {
+#endif // LOOP_SENDING
+    send_data(argv[1], 4321, composite_number);
 
 
-    send_data("192.168.33.131", 4321, composite_number);
-    
-  
     char* received_data;
     received_data = receive_data(4321);
-    
+
+    FILE* read_output = fopen("reveive output.txt", "r");
+    FILE* usage_out = fopen("usage_out.txt", "a");
 
 
+    char received_line[200];
+    int vmsize, rss;
+    double cpu;
+    long extime;
+    for (int i = 1; i <= 26; i++) {
+        if (i >= 1 && i <= 21) {
+            fscanf(read_output, "%s", received_line);
+        }
+        else if (i == 22) {
+            fscanf(read_output, "%s %d", received_line, &vmsize);
+        }
+        else if (i == 23) {
+            fscanf(read_output, "%s %d", received_line, &rss);
+        }
+        else if (i == 24) {
+            fscanf(read_output, "%s %lf", received_line, &cpu);
+        }
+        else if (i == 25) {
+            fscanf(read_output, "%s %ld", received_line, &extime);
+        }
+        else {
+            break;
+        }
+    }
 
+    fprintf(usage_out, "%f,%d,%d,%ld\n", cpu, vmsize, rss, extime);    
+
+#ifdef LOOP_SENDING
+        Sleep(5000);
+    }
+#endif // LOOP_SENDING  
     return 0;
 }
-
