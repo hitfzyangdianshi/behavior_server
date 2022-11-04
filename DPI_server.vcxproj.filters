@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="资源文件\keys">
+      <UniqueIdentifier>{6623e76c-859d-4f2f-bb35-e0a8bca5cc4c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DPI_server.cpp">
@@ -22,6 +25,36 @@
   <ItemGroup>
     <None Include=".gitignore">
       <Filter>资源文件</Filter>
+    </None>
+    <None Include="keys\ca.csr">
+      <Filter>资源文件\keys</Filter>
+    </None>
+    <None Include="keys\ca.srl">
+      <Filter>资源文件\keys</Filter>
+    </None>
+    <None Include="keys\cacert.pem">
+      <Filter>资源文件\keys</Filter>
+    </None>
+    <None Include="keys\cakey.pem">
+      <Filter>资源文件\keys</Filter>
+    </None>
+    <None Include="keys\client.csr">
+      <Filter>资源文件\keys</Filter>
+    </None>
+    <None Include="keys\clientcert.pem">
+      <Filter>资源文件\keys</Filter>
+    </None>
+    <None Include="keys\clientkey.pem">
+      <Filter>资源文件\keys</Filter>
+    </None>
+    <None Include="keys\server.csr">
+      <Filter>资源文件\keys</Filter>
+    </None>
+    <None Include="keys\servercert.pem">
+      <Filter>资源文件\keys</Filter>
+    </None>
+    <None Include="keys\serverkey.pem">
+      <Filter>资源文件\keys</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

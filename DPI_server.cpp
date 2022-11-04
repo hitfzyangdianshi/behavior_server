@@ -1,23 +1,33 @@
 ﻿#define _CRT_SECURE_NO_WARNINGS
+#define _WINSOCK_DEPRECATED_NO_WARNINGS  
+
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <fstream>
 
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+
+
+#pragma comment(lib, "D:\\OpenSSL_noshared\\lib\\libssl.lib")
+#pragma comment(lib, "D:\\OpenSSL_noshared\\lib\\libcrypto.lib")
+
 #include <winsock2.h>
 
-#define _WINSOCK_DEPRECATED_NO_WARNINGS  
+
 
 #pragma comment(lib,"ws2_32.lib")
-
+#pragma comment(lib,"Crypt32.lib")
 
 
 
 using namespace std;
 
 
-
+#if 0
 char* receive_data(int port) {
     int result = 0;
 
@@ -94,7 +104,7 @@ char* receive_data(int port) {
 }
 
 
-bool send_data(const char* addr, int port, char* data_buffer) {
+int send_data(const char* addr, int port, char* data_buffer) {
     WSADATA data;
     if (WSAStartup(MAKEWORD(2, 2), &data) != 0) {
         cout << "WSAStartup error";
@@ -133,55 +143,191 @@ bool send_data(const char* addr, int port, char* data_buffer) {
 
     return true;
 }
+#endif
 
 
-char composite_number[] = "77785099991111111111111111111111112222222222222222222222999999999999999999999999999999990000000000000000000009999999999999999999999999999999999999999999999999999999";
+int split(char dst[][100000], char* str, const char* spl)
+{
+    int n = 0;
+    char* result = NULL;
+    result = strtok(str, spl);
+    while (result != NULL)
+    {
+        strcpy(dst[n++], result);
+        result = strtok(NULL, spl);
+    }
+    return n;
+}
+
+
+
+char composite_number[] = "777850999911111111111111111111111122222222222222222222229999999999999999999999999999999900000000000000000000099999999999999999999999999999999999999999999999999999992";
+char client_ip_address[] = "192.168.33.131";
+int port = 4321;
+
 
 int main(int argc, char** argv) {
 
-#ifdef LOOP_SENDING
-    while (1) {
-#endif // LOOP_SENDING
-    send_data(argv[1], 4321, composite_number);
+    char buf_recieve[141000];
 
+
+    WSADATA data;
+    if (WSAStartup(MAKEWORD(2, 2), &data) != 0) {
+        perror( "WSAStartup error");
+        ERR_print_errors_fp(stderr);
+        exit(EXIT_FAILURE);
+    }
+
+    SOCKADDR_IN addrServer;
+
+
+
+    SSL_CTX* ctx;
+    SSL* ssl;
+
+    ctx = SSL_CTX_new(TLS_client_method());
+    if (!ctx) {
+        perror("Unable to create SSL context");
+        ERR_print_errors_fp(stderr);
+        exit(EXIT_FAILURE);
+    }
+
+    SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, NULL);
+
+    if (SSL_CTX_load_verify_locations(ctx, "keys/cacert.pem", NULL) != 1) {
+        ERR_print_errors_fp(stderr);
+        exit(EXIT_FAILURE);
+    }
+
+    if (SSL_CTX_set_default_verify_paths(ctx) != 1) {
+        ERR_print_errors_fp(stderr);
+        exit(EXIT_FAILURE);
+    }
+
+    if (SSL_CTX_use_certificate_file(ctx, "keys/servercert.pem", SSL_FILETYPE_PEM) <= 0) {
+        ERR_print_errors_fp(stderr);
+        exit(EXIT_FAILURE);
+    }
+
+    if (SSL_CTX_use_PrivateKey_file(ctx, "keys/serverkey.pem", SSL_FILETYPE_PEM) <= 0) {
+        ERR_print_errors_fp(stderr);
+        exit(EXIT_FAILURE);
+    }
+
+    if (SSL_CTX_check_private_key(ctx) != 1) {
+        perror("SSL_CTX_check_private_key failed");
+        ERR_print_errors_fp(stderr);
+        exit(EXIT_FAILURE);
+    }
+
+    SSL_CTX_set_mode(ctx, SSL_MODE_AUTO_RETRY);
+
+
+    addrServer.sin_family = AF_INET;
+    addrServer.sin_port = htons(port);
+    addrServer.sin_addr.S_un.S_addr = inet_addr(client_ip_address);
+
+
+    SOCKET socketClient = socket(AF_INET, SOCK_STREAM, 0);
+
+    if (socketClient == INVALID_SOCKET || socketClient == SOCKET_ERROR)  {
+        perror("socket create error");
+        ERR_print_errors_fp(stderr);
+        exit(EXIT_FAILURE);
+    }
+
+    ssl = SSL_new(ctx);
+    if (ssl == NULL) {
+        perror("SSL_new error \n");
+    }
+
+
+    SSL_set_fd(ssl, socketClient);
+
+
+    int connect_result;
+    connect_result = connect(socketClient, (struct sockaddr*)&addrServer, sizeof(addrServer));
+    if (connect_result < 0) {
+        printf("connect error: %s(errno: %d)\n", strerror(errno), errno);
+        exit(EXIT_FAILURE);
+    }
+
+    if (connect_result == 0) {
+        /* Run the OpenSSL handshake */
+        int result_ssl = SSL_connect(ssl);
+
+        /* Exchange some data if the connection succeeded */
+        if (result_ssl == 1) {
+            SSL_write(ssl, composite_number,strlen(composite_number));
+            printf("send composite_number: %s\n", composite_number);
+            SSL_read(ssl, buf_recieve, 141000);
+            printf("Received message from server: \n%s\n", buf_recieve);
+            fprintf(fopen("reveive output.txt", "w"), "%s\n", buf_recieve);
+        }
+    }
+
+
+    
+
+#if 0
 
     char* received_data;
     received_data = receive_data(4321);
+#endif
 
-    FILE* read_output = fopen("reveive output.txt", "r");
+    
+
+
+
     FILE* usage_out = fopen("usage_out.txt", "a");
 
 
-    char received_line[200];
+    char received_numbers[20][1000],tmp,tmps[20];
     int vmsize, rss;
     double cpu;
     long extime;
-    for (int i = 1; i <= 26; i++) {
-        if (i >= 1 && i <= 21) {
-            fscanf(read_output, "%s", received_line);
-        }
-        else if (i == 22) {
-            fscanf(read_output, "%s %d", received_line, &vmsize);
-        }
-        else if (i == 23) {
-            fscanf(read_output, "%s %d", received_line, &rss);
-        }
-        else if (i == 24) {
-            fscanf(read_output, "%s %lf", received_line, &cpu);
-        }
-        else if (i == 25) {
-            fscanf(read_output, "%s %ld", received_line, &extime);
-        }
-        else {
-            break;
-        }
-    }
+
+    sscanf(buf_recieve, "%s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %c %s %d %s %d %s %lf %s %ld",
+        received_numbers[0], received_numbers[1], received_numbers[2], received_numbers[3], received_numbers[4], received_numbers[5], received_numbers[6], received_numbers[7],
+        received_numbers[8], received_numbers[9], received_numbers[10], received_numbers[11], received_numbers[12], received_numbers[13], received_numbers[14],
+        received_numbers[15], received_numbers[16], received_numbers[17], received_numbers[18], received_numbers[19],
+        &tmp,tmps,&vmsize,tmps,&rss,tmps,&cpu,tmps,&extime);
+
+
+
 
     fprintf(usage_out, "%f,%d,%d,%ld\n", cpu, vmsize, rss, extime);    
 
-#ifdef LOOP_SENDING
-        Sleep(5000);
+
+    char rec_cut[2][100000];
+    split(rec_cut, buf_recieve, "@");
+
+    //printf("get ptrace result: \n%s\n", rec_cut[1]);
+    fprintf(fopen("ptrace result.txt","w"),"%s\n", rec_cut[1]);
+
+
+    int ptrace_sys_count[1000000];
+    long syscall;
+    int syscall_count;
+    memset(ptrace_sys_count, 0, sizeof(int) * 1000000);
+
+    FILE *ptrace_read=fopen("ptrace result.txt", "r");
+
+    while (fscanf(ptrace_read, "%ld %d", &syscall, &syscall_count) != EOF) {
+        ptrace_sys_count[syscall] = syscall_count;
+        printf(" %lu\t%d\n", syscall, ptrace_sys_count[syscall]);
     }
-#endif // LOOP_SENDING  
+    //for (long i = 0; i < 1000000; i++) {
+    //    if(ptrace_sys_count[i]>0)
+    //        printf("%ld\t%d\n", i, ptrace_sys_count[i]);
+    //}
+    
+
+
+    SSL_shutdown(ssl);
+    SSL_free(ssl);
+    closesocket(socketClient);
+    WSACleanup();
+
     return 0;
 }

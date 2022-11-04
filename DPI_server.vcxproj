@@ -118,6 +118,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_WINSOCK_DEPRECATED_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>D:\OpenSSL_noshared\include</AdditionalIncludeDirectories>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -131,6 +133,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
+    <None Include="keys\ca.csr" />
+    <None Include="keys\ca.srl" />
+    <None Include="keys\cacert.pem" />
+    <None Include="keys\cakey.pem" />
+    <None Include="keys\client.csr" />
+    <None Include="keys\clientcert.pem" />
+    <None Include="keys\clientkey.pem" />
+    <None Include="keys\server.csr" />
+    <None Include="keys\servercert.pem" />
+    <None Include="keys\serverkey.pem" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="reveive output.txt" />
