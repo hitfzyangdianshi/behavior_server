@@ -44,8 +44,8 @@ int split(char dst[][100000], char* str, const char* spl)
 
 
 
-char composite_number[] = "777850999911111111111111111000000099999999999999999999999999999999999999999999999999999992";
-char client_ip_address[] = "192.168.33.131";
+char composite_number[] = "7778509999111111111111111110000000999231112332199999999999999999999999999999999999999999999999999992";
+char client_ip_address[] = "192.168.0.105";
 int port = 4321;
 
 
@@ -146,6 +146,18 @@ int main(int argc, char** argv) {
             SSL_read(ssl, buf_recieve, 141000);
             printf("Received message from server: \n%s\n", buf_recieve);
             fprintf(fopen("reveive output.txt", "w"), "%s\n", buf_recieve);
+        }
+
+        else {
+            perror("SSL connection error: ");
+            int err_gererror= ERR_get_error();
+            cout <<"ERR get error = "<< err_gererror<<endl;
+            int ssl_geterror = SSL_get_error(ssl, result_ssl);
+            cout << "SSL get error : "<< ssl_geterror <<endl;
+            if (ssl_geterror == SSL_ERROR_SYSCALL) {
+                printf("%s (errno: %d)\n", strerror(errno), errno);
+            }
+
         }
     }
 
