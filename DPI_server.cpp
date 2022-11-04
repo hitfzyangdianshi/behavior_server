@@ -27,123 +27,6 @@
 using namespace std;
 
 
-#if 0
-char* receive_data(int port) {
-    int result = 0;
-
-    SOCKET server_ = INVALID_SOCKET; //socket 对象
-
-    WSADATA data_;
-
-    result = WSAStartup(MAKEWORD(2, 2), &data_);//inital
-    if (result != 0)
-    {
-        cout << "WSAStartup() init error " << GetLastError() << std::endl;
-        return NULL;
-    }
-
-    server_ = socket(AF_INET, SOCK_STREAM, 0);
-
-    SOCKADDR_IN addrSrv;
-    addrSrv.sin_family = AF_INET;
-    addrSrv.sin_port = htons(port);
-    addrSrv.sin_addr.S_un.S_addr = htonl(INADDR_ANY);//ip port 
-
-    result = bind(server_, (LPSOCKADDR)&addrSrv, sizeof(SOCKADDR_IN));
-
-    if (result != 0)
-    {
-        cout << "bind() error" << result;
-        return NULL;
-    }
-
-    result = listen(server_, 10);
-    if (result != 0)
-    {
-        cout << "listen error" << result;
-        return NULL;
-    }
-
-    SOCKADDR_IN addrClient;
-    int len = sizeof(SOCKADDR);
-
-    cout << "wait new connect......" << std::endl;
-    SOCKET socketConn = accept(server_, (SOCKADDR*)&addrClient, &len);
-
-    if (socketConn == SOCKET_ERROR)
-    {
-        cout << " accept error" << WSAGetLastError();
-        return NULL;
-    }
-
-
-
-    char* f;
-
-    f = inet_ntoa(addrClient.sin_addr);
-    cout << "accept client ip:" << f << endl;
-
-    char recvBuff[9999];
-    memset(recvBuff, '\0', sizeof(char)* 9999);
-
-    recv(socketConn, recvBuff, 9999, 0);
-
-    cout << "recv from client:\n" << recvBuff << endl;;
-
-    ofstream  output("reveive output.txt");
-    output << recvBuff << endl;
-    output.close();
-
-
-    closesocket(server_);
-    WSACleanup();
-
-
-    return recvBuff;
-
-}
-
-
-int send_data(const char* addr, int port, char* data_buffer) {
-    WSADATA data;
-    if (WSAStartup(MAKEWORD(2, 2), &data) != 0) {
-        cout << "WSAStartup error";
-        return false;
-    }
-
-    SOCKADDR_IN addrServer;
-    addrServer.sin_family = AF_INET;
-    addrServer.sin_port = htons(port);
-    addrServer.sin_addr.S_un.S_addr = inet_addr(addr);
- 
-    SOCKET socketClient = socket(AF_INET, SOCK_STREAM, 0);
-
-    if (socketClient == INVALID_SOCKET)
-    {
-        cout << "socket create error";
-        return false;
-    }
-
-
-    if (connect(socketClient, (struct sockaddr*)&addrServer, sizeof(addrServer)) == INVALID_SOCKET)
-    {
-        cout << "connect error";
-        return false;
-    }
- 
-
-    int a;
-    send(socketClient, data_buffer, strlen(data_buffer), 0);
-
-    printf("data sent[%d]: %s\n", strlen(data_buffer), data_buffer);
-
-
-    closesocket(socketClient);
-    WSACleanup();
-
-    return true;
-}
-#endif
 
 
 int split(char dst[][100000], char* str, const char* spl)
@@ -161,7 +44,7 @@ int split(char dst[][100000], char* str, const char* spl)
 
 
 
-char composite_number[] = "777850999911111111111111111111111122222222222222222222229999999999999999999999999999999900000000000000000000099999999999999999999999999999999999999999999999999999992";
+char composite_number[] = "777850999911111111111111111000000099999999999999999999999999999999999999999999999999999992";
 char client_ip_address[] = "192.168.33.131";
 int port = 4321;
 
@@ -267,13 +150,6 @@ int main(int argc, char** argv) {
     }
 
 
-    
-
-#if 0
-
-    char* received_data;
-    received_data = receive_data(4321);
-#endif
 
     
 
@@ -303,24 +179,28 @@ int main(int argc, char** argv) {
     split(rec_cut, buf_recieve, "@");
 
     //printf("get ptrace result: \n%s\n", rec_cut[1]);
-    fprintf(fopen("ptrace result.txt","w"),"%s\n", rec_cut[1]);
+    FILE* ptrace_write = fopen("ptrace result.txt", "w");
+    fprintf(ptrace_write,"%s\n", rec_cut[1]);
+    fclose(ptrace_write);
 
 
-    int ptrace_sys_count[1000000];
-    long syscall;
-    int syscall_count;
-    memset(ptrace_sys_count, 0, sizeof(int) * 1000000);
+   
+    int syscall_tag=0;
+
+    struct syscall_list {
+        long syscall;
+        int syscall_count;
+    }_syscall_list[500];
+
+    memset(_syscall_list,NULL, sizeof(_syscall_list[0]) * 500);
 
     FILE *ptrace_read=fopen("ptrace result.txt", "r");
 
-    while (fscanf(ptrace_read, "%ld %d", &syscall, &syscall_count) != EOF) {
-        ptrace_sys_count[syscall] = syscall_count;
-        printf(" %lu\t%d\n", syscall, ptrace_sys_count[syscall]);
+    while (fscanf(ptrace_read, "%ld %d", &_syscall_list[syscall_tag].syscall, &_syscall_list[syscall_tag].syscall_count) != EOF) {
+        syscall_tag++;
     }
-    //for (long i = 0; i < 1000000; i++) {
-    //    if(ptrace_sys_count[i]>0)
-    //        printf("%ld\t%d\n", i, ptrace_sys_count[i]);
-    //}
+    fclose(ptrace_read);
+
     
 
 
@@ -328,6 +208,15 @@ int main(int argc, char** argv) {
     SSL_free(ssl);
     closesocket(socketClient);
     WSACleanup();
+
+
+
+    for (int i = 0; i < syscall_tag; i++) {
+        printf(" %ld\t%d\n", _syscall_list[i].syscall, _syscall_list[i].syscall_count);
+    }
+
+
+
 
     return 0;
 }

@@ -145,6 +145,7 @@
     <None Include="keys\serverkey.pem" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="ptrace result.txt" />
     <Text Include="reveive output.txt" />
     <Text Include="usage_out.txt" />
   </ItemGroup>
