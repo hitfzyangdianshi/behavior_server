@@ -134,7 +134,6 @@
   <ItemGroup>
     <None Include=".gitignore" />
     <None Include="keys\ca.csr" />
-    <None Include="keys\ca.srl" />
     <None Include="keys\cacert.pem" />
     <None Include="keys\cakey.pem" />
     <None Include="keys\client.csr" />

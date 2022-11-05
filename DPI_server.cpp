@@ -45,7 +45,7 @@ int split(char dst[][100000], char* str, const char* spl)
 
 
 char composite_number[] = "7778509999111111111111111110000000999231112332199999999999999999999999999999999999999999999999999992";
-char client_ip_address[] = "192.168.0.105";
+char client_ip_address[] = "192.168.0.108";
 int port = 4321;
 
 

@@ -29,9 +29,6 @@
     <None Include="keys\ca.csr">
       <Filter>资源文件\keys</Filter>
     </None>
-    <None Include="keys\ca.srl">
-      <Filter>资源文件\keys</Filter>
-    </None>
     <None Include="keys\cacert.pem">
       <Filter>资源文件\keys</Filter>
     </None>
