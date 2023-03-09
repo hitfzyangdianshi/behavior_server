@@ -14,7 +14,7 @@
 
 using namespace std;
 
-
+#define LOOP_SENDING
 
 char* receive_data(int port) {
     int result = 0;
@@ -176,6 +176,7 @@ int main(int argc, char** argv) {
         }
 
         fprintf(usage_out, "%f,%d,%d,%ld\n", cpu, vmsize, rss, extime);
+        fflush(usage_out);
 
 #ifdef LOOP_SENDING
         Sleep(5000);
