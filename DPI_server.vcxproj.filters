@@ -61,8 +61,5 @@
     <Text Include="reveive output.txt">
       <Filter>资源文件</Filter>
     </Text>
-    <Text Include="ptrace result.txt">
-      <Filter>资源文件</Filter>
-    </Text>
   </ItemGroup>
 </Project>
