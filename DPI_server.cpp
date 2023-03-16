@@ -179,7 +179,7 @@ int main(int argc, char** argv) {
         fflush(usage_out);
 
 #ifdef LOOP_SENDING
-        Sleep(5000);
+        Sleep(7000);
     }
 #endif // LOOP_SENDING  
     return 0;
